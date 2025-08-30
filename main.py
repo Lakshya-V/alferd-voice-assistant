@@ -6,6 +6,7 @@ import datetime as dt
 import requests
 from openai import OpenAI
 from spotify import play, play_pause
+from whatsapp import msg
 
 
 
@@ -57,7 +58,24 @@ def ProcessCommand(c) :
         else :
             speak(f"playing {song}")
             play(song)
-
+    
+    if "write message" in c.lower(): #for whatsapp
+        speak("sir whom should i write the message for")
+        with sr.Microphone() as source:
+            r = sr.Recognizer()
+            print("LISTENING...... Please say the receiver name")
+            audio = r.listen(source)
+            person = r.recognize_google(audio, language="en-IN")
+            print(person)
+        speak(f"say the message for {person} sir")
+        with sr.Microphone() as source:
+            r = sr.Recognizer()
+            print("LISTENING...... YOUR MESSAGE")
+            audio = r.listen(source)
+            word = r.recognize_google(audio, language="en-IN")
+            print(word)
+        msg(word, person)
+    
     if " tell news" in c.lower() :
         speak("Which topic do you want news about? Please keep it short.")
         with sr.Microphone() as source:
