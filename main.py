@@ -29,6 +29,12 @@ def ProcessCommand(c) :
         time_str = f"It's {hour}:{minute} {ampm} on {date_str}."
         speak(f"Sir, the current time and date is {time_str}")
 
+    if "open mail" in c.lower() :
+        webbrowser.open("https://mail.google.com")
+        
+    if "open github" in c.lower() :
+        webbrowser.open("https://github.com")
+
     if "open google" in c.lower() :
         webbrowser.open("https://google.com")
 
@@ -100,6 +106,39 @@ def ProcessCommand(c) :
             print(f"Error fetching news: {e}")
             speak("Sorry, there was an error fetching the news.")
 
+    if "take note" in c.lower():
+        speak("What would you like me to note down?")
+        with sr.Microphone() as source:
+            r = sr.Recognizer()
+            print("LISTENING... Your note")
+            audio = r.listen(source)
+            note = r.recognize_google(audio, language="en-IN")
+            print(f"Note: {note}")
+        with open("notes.txt","a") as f:
+            f.write(note + "\n")
+        speak("Your note has been saved.")
+
+    elif "clear notes" in c.lower():
+        try:
+            open("notes.txt", "w").close() 
+            speak("All notes have been cleared.")
+        except Exception as e:
+            print(f"Error clearing notes: {e}")
+            speak("Sorry, there was an error clearing the notes.")
+            
+    elif "read notes" in c.lower():
+        try:
+            with open("notes.txt", "r") as f:
+                notes = f.readlines()
+            if notes:
+                speak("Here are your notes:")
+                for n in notes:
+                    speak(n.strip())
+            else:
+                speak("You have no notes yet.")
+        except FileNotFoundError:
+            speak("You have no notes yet.")
+            
     else :
         #Let openi handle the request
         ai_process(c)
@@ -117,9 +156,6 @@ def ai_process(c) :
     )
     content = completion.choices[0].message.content.strip()
     speak(content)
-
-def open(app) :
-    os.system(f"start {app}:") 
 
 def speak(text) :
     engine.say(text)
