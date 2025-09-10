@@ -10,7 +10,7 @@ def msg(c,reciever):
     p.write(reciever)
     p.moveTo(386,330,duration=0.75)
     p.click()
-    p.moveTo(1561,976,duration=0.25)
+    p.moveTo(1561,976,duration=0.35)
     p.click()
     p.write(c,interval=0.25)
     p.hotkey('enter')

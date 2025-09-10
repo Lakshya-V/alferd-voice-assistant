@@ -1,9 +1,13 @@
 import speech_recognition as sr
-import os
 import webbrowser
 import pyttsx3
 import datetime as dt
 import requests
+import screen_brightness_control as sbc
+import os
+from word2number import w2n
+from comtypes import CLSCTX_ALL
+from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from openai import OpenAI
 from spotify import play, play_pause
 from whatsapp import msg
@@ -47,6 +51,52 @@ def ProcessCommand(c) :
     if "open instagram" in c.lower() :
         webbrowser.open("https://instagram.com")
     
+    if "change brightness" in c.lower().strip() :
+        brightness = sbc.get_brightness()
+        speak (f"Current brightness is {brightness} percent. By how much would you like i to be?")
+        speak("FOR SINGLE DIGIT BRIGHTNESS SAY ZERO BEFORE THE NUMBER LIKE 0 5 FOR 5% BRIGHTNESS")
+        with sr.Microphone() as source :
+            r = sr.Recognizer()
+            print("LISTENING... brightness change")
+            audio = r.listen(source)
+            percent = r.recognize_google(audio, language="en-IN")
+        try :
+            sbc.set_brightness(smart_num_convert(percent))
+            speak(f"Brightness changed to {percent} percent")
+        except Exception as e :
+            print(f"Error changing brightness: {e}")
+            speak("Sorry, I couldn't change the brightness.")
+        
+    if "change volume" in c.lower().strip() :
+        devices = AudioUtilities.GetSpeakers()
+        interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+        volume = interface.QueryInterface(IAudioEndpointVolume)
+        vol = volume.GetMasterVolumeLevel()
+        speak(f"Current volume level is {vol}. By how much would you like it to be?")
+        with sr.Microphone() as source :
+            r = sr.Recognizer()
+            print("LISTENING... speak mute or unmute or specify the percent volume")
+            print("FOR SINGLE DIGIT VOLUME SAY ZERO BEFORE THE NUMBER LIKE 0 5 FOR 5% VOLUME")
+            audio = r.listen(source)
+            percent = r.recognize_google(audio, language="en-IN")
+        if percent.lower().strip() == "mute" :
+            volume.SetMute(1, None)
+            speak("Volume muted")
+        elif percent.lower().strip() == "unmute" :
+            volume.SetMute(0, None)
+            speak("Volume unmuted")
+        else :
+            try :
+                percentage = smart_num_convert(percent)
+                if 0 <= percentage <= 100 :
+                    volume.SetMasterVolumeLevelScalar(percentage / 100, None)
+                    speak(f"Volume changed to {percentage} percent")
+                else :
+                    speak("Please specify a volume between 0 and 100.")
+            except Exception as e :
+                print(f"Error changing volume: {e}")
+                speak("Sorry, I couldn't change the volume.")
+
     if "open spotify" in c.lower() :
         speak("Spotify opened sir tell the name of the song you want to play")
         with sr.Microphone() as source:
@@ -62,10 +112,11 @@ def ProcessCommand(c) :
             speak("playing the song")
             play_pause()
         else :
-            speak(f"playing {song}")
+            speak ("please tell the position of the song when the search results are shown")
             play(song)
+            speak(f"playing {song}")
     
-    if "write message" in c.lower(): #for whatsapp
+    if "write message" in c.lower():
         speak("sir whom should i write the message for")
         with sr.Microphone() as source:
             r = sr.Recognizer()
@@ -118,7 +169,7 @@ def ProcessCommand(c) :
             f.write(note + "\n")
         speak("Your note has been saved.")
 
-    elif "clear notes" in c.lower():
+    if "clear notes" in c.lower():
         try:
             open("notes.txt", "w").close() 
             speak("All notes have been cleared.")
@@ -126,7 +177,7 @@ def ProcessCommand(c) :
             print(f"Error clearing notes: {e}")
             speak("Sorry, there was an error clearing the notes.")
             
-    elif "read notes" in c.lower():
+    if "read notes" in c.lower():
         try:
             with open("notes.txt", "r") as f:
                 notes = f.readlines()
@@ -140,8 +191,18 @@ def ProcessCommand(c) :
             speak("You have no notes yet.")
             
     else :
-        #Let openi handle the request
-        ai_process(c)
+        # Let openi handle the request
+        speak("do you want me to utilise openai for this")
+        with sr.Microphone() as source:
+            r = sr.Recognizer()
+            print("LISTENING... your decision")
+            audio = r.listen(source)
+            decision = r.recognize_google(audio, language="en-IN")
+            print(decision)
+            if "yes" in decision.lower() :
+                ai_process(c)
+            else :
+                speak("Okay, I won't use OpenAI for this request.")
 
 def ai_process(c) :
     client = OpenAI(
@@ -157,9 +218,19 @@ def ai_process(c) :
     content = completion.choices[0].message.content.strip()
     speak(content)
 
+def smart_num_convert(s):
+    s = s.strip().lower()
+    try:
+        return int(s)
+    except ValueError:
+        return w2n.word_to_num(s)
+    
 def speak(text) :
     engine.say(text)
     engine.runAndWait()
+
+def open(app) :
+    os.system(f"start {app}:")  # only for standard apps
 
 def final(stop_event=None):
     while not stop_event.is_set():
@@ -182,14 +253,10 @@ def final(stop_event=None):
                         audio = r.listen(source)
                         command = r.recognize_google(audio, language="english-in")
                     ProcessCommand(command)
-                    
-
             except sr.UnknownValueError:
-
                 print("ALFERD COULD NOT UNDERSTAND WHAT YOU SAID...")
             except Exception as e:
-                print(f"ERROR; {e}") 
-            
+                print(f"ERROR; {e}")             
             if stop_event is not None and stop_event.is_set():
                 break 
 
