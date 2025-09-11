@@ -40,21 +40,43 @@ def ProcessCommand(c) :
         webbrowser.open("https://github.com")
 
     if "open google" in c.lower() :
-        webbrowser.open("https://google.com")
+        speak("sir what do you want to search on google")
+        with sr.Microphone() as source :
+            r = sr.Recognizer()
+            print("LISTENING... google search")
+            audio = r.listen(source)
+            search_query = r.recognize_google(audio, language="en-IN")
+            print(f"User wants to search: {search_query}")
+        webbrowser.open(f"https://www.google.com/search?q={search_query}")
 
     if "open linkedin" in c.lower() :
         webbrowser.open("https://linkedin.com")
 
     if "open youtube" in c.lower() :
-        webbrowser.open("https://youtube.com")
+        speak("sir do you want me to search anything on youtube")
+        with sr.Microphone() as source :
+            r = sr.Recognizer()
+            print("LISTENING... decision")
+            audio = r.listen(source)
+            decision = r.recognize_google(audio, language="en-IN")
+            print(decision)
+        if "yes" in decision.lower() :
+            speak("what do you want to search on youtube")
+            with sr.Microphone() as source :
+                r = sr.Recognizer()
+                print("LISTENING... youtube search")
+                audio = r.listen(source)
+                yt_query = r.recognize_google(audio, language="en-IN")
+                print(f"User wants to search: {yt_query}")
+            webbrowser.open(f"https://www.youtube.com/results?search_query={yt_query}")
 
     if "open instagram" in c.lower() :
         webbrowser.open("https://instagram.com")
     
     if "change brightness" in c.lower().strip() :
         brightness = sbc.get_brightness()
-        speak (f"Current brightness is {brightness} percent. By how much would you like i to be?")
-        speak("FOR SINGLE DIGIT BRIGHTNESS SAY ZERO BEFORE THE NUMBER LIKE 0 5 FOR 5% BRIGHTNESS")
+        speak (f"Current brightness is {brightness} percent.how much would you like brightness to be?")
+        print("FOR SINGLE DIGIT BRIGHTNESS SAY ZERO BEFORE THE NUMBER LIKE 0 5 FOR 5% BRIGHTNESS")
         with sr.Microphone() as source :
             r = sr.Recognizer()
             print("LISTENING... brightness change")
@@ -72,7 +94,7 @@ def ProcessCommand(c) :
         interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
         volume = interface.QueryInterface(IAudioEndpointVolume)
         vol = volume.GetMasterVolumeLevel()
-        speak(f"Current volume level is {vol}. By how much would you like it to be?")
+        speak(f"Current volume level is {vol}. how much would you like it to be?")
         with sr.Microphone() as source :
             r = sr.Recognizer()
             print("LISTENING... speak mute or unmute or specify the percent volume")
@@ -192,7 +214,7 @@ def ProcessCommand(c) :
             
     else :
         # Let openi handle the request
-        speak("do you want me to utilise openai for this")
+        speak("do you want me to utilise openai for this?")
         with sr.Microphone() as source:
             r = sr.Recognizer()
             print("LISTENING... your decision")
