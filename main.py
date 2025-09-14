@@ -5,12 +5,13 @@ import datetime as dt
 import requests
 import screen_brightness_control as sbc
 import os
+import time as t 
 from word2number import w2n
 from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from openai import OpenAI
 from spotify import play, play_pause
-from whatsapp import msg
+from whatsapp import msg, call
 
 
 
@@ -62,6 +63,7 @@ def ProcessCommand(c) :
             print(decision)
         if "yes" in decision.lower() :
             speak("what do you want to search on youtube")
+            print("tell the search query")
             with sr.Microphone() as source :
                 r = sr.Recognizer()
                 print("LISTENING... youtube search")
@@ -69,6 +71,8 @@ def ProcessCommand(c) :
                 yt_query = r.recognize_google(audio, language="en-IN")
                 print(f"User wants to search: {yt_query}")
             webbrowser.open(f"https://www.youtube.com/results?search_query={yt_query}")
+        else :
+            pass
 
     if "open instagram" in c.lower() :
         webbrowser.open("https://instagram.com")
@@ -137,23 +141,57 @@ def ProcessCommand(c) :
             speak ("please tell the position of the song when the search results are shown")
             play(song)
             speak(f"playing {song}")
-    
-    if "write message" in c.lower():
-        speak("sir whom should i write the message for")
-        with sr.Microphone() as source:
+    if "open whatsapp" in c.lower() :
+        speak("sir do you want to write msg or call")
+        print("please say write msg or call")
+        with sr.Microphone() as source :
             r = sr.Recognizer()
-            print("LISTENING...... Please say the receiver name")
+            print("LISTENING... decision")
             audio = r.listen(source)
-            person = r.recognize_google(audio, language="en-IN")
-            print(person)
-        speak(f"say the message for {person} sir")
-        with sr.Microphone() as source:
-            r = sr.Recognizer()
-            print("LISTENING...... YOUR MESSAGE")
-            audio = r.listen(source)
-            word = r.recognize_google(audio, language="en-IN")
-            print(word)
-        msg(word, person)
+            decision = r.recognize_google(audio, language="en-IN")
+            print(decision)
+        if "write message" in decision.lower():
+            speak("sir whom should i write the message for")
+            with sr.Microphone() as source:
+                r = sr.Recognizer()
+                print("LISTENING...... Please say the receiver name")
+                audio = r.listen(source)
+                person = r.recognize_google(audio, language="en-IN")
+                print(person)
+            speak(f"say the message for {person} sir")
+            with sr.Microphone() as source:
+                r = sr.Recognizer()
+                print("LISTENING...... YOUR MESSAGE")
+                audio = r.listen(source)
+                word = r.recognize_google(audio, language="en-IN")
+                print(word)
+            msg(word, person)
+
+        if "call" in decision.lower():
+            speak("sir whom should i call")
+            with sr.Microphone() as source:
+                r = sr.Recognizer()
+                print("LISTENING...... Please say the receiver name")
+                audio = r.listen(source)
+                person = r.recognize_google(audio, language="en-IN")
+                print(person)
+            speak(f"say the type of call video or normal for {person} sir")
+            with sr.Microphone() as source:
+                r = sr.Recognizer()
+                print("LISTENING...... TYPE OF CALL")
+                audio = r.listen(source)
+                type = r.recognize_google(audio, language="en-IN")
+                print(type)
+            if "video" in type.lower():
+                type = "v"
+                speak(f"video calling {person}")
+                call(person,type)
+            if "voice" in type.lower():
+                type = "n"
+                speak(f"voice calling {person}")
+                call(person,type) 
+            else :
+                speak("type did not mentioned clearly function terminated")
     
     if " tell news" in c.lower() :
         speak("Which topic do you want news about? Please keep it short.")
@@ -207,6 +245,7 @@ def ProcessCommand(c) :
                 speak("Here are your notes:")
                 for n in notes:
                     speak(n.strip())
+                    t.sleep(1)
             else:
                 speak("You have no notes yet.")
         except FileNotFoundError:
@@ -214,7 +253,9 @@ def ProcessCommand(c) :
             
     else :
         # Let openi handle the request
+        print("asked request could not be fulfilled.")
         speak("do you want me to utilise openai for this?")
+        print("do want to use opnai")
         with sr.Microphone() as source:
             r = sr.Recognizer()
             print("LISTENING... your decision")
