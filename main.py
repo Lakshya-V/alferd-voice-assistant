@@ -1,5 +1,6 @@
 import speech_recognition as sr
 import webbrowser
+import psutil
 import pyttsx3
 import datetime as dt
 import requests
@@ -12,8 +13,13 @@ from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from openai import OpenAI
 from spotify import play, play_pause
 from whatsapp import msg, call
+import json
 
+with open("config.json", "r") as f:
+    config = json.load(f)
 
+openai = config.get("OPENAI_API_KEY")
+newsapi = config.get("NEWS_API_KEY")
 
 recognizer = sr.Recognizer()
 engine = pyttsx3.init()
@@ -24,8 +30,50 @@ engine.setProperty('rate', 125)
 
 
 def ProcessCommand(c) :
+    if "battery status" in c.lower() :
+        print("Checking battery status...")
+        battery = psutil.sensors_battery()
+        percent = battery.percent
+        try : 
+            print(f"Battery is at {percent} percent.")
+            speak(f"Sir, the battery is at {percent} percent.")
+        except Exception as e :
+            print(f"Error checking battery status: {e}")
+            speak("Sorry, I couldn't check the battery status.")  
 
-    if "tell date and time" in c.lower() :
+    elif "close wi-fi" in c.lower() :
+        os.system("netsh interface set interface Wi-fi disable")
+        speak("wifi disabled sir")
+
+    elif "open wi-fi" in c.lower() :
+        os.system("netsh interface set interface Wi-Fi enable")
+        open("ms-availablenetworks")
+        speak("wifi enabled sir please connect to the desired network")
+
+    elif "open app" in c.lower() :
+        print("""please check from list which apps to open or give a name of the app:
+              [MAKE SURE APP IS INSTALLED AND IS STANDARD APP IN WINDOWS]
+              1 calculator
+              2 notepad
+              3 powershell
+              4 calender
+              5 settings
+              6 camera
+              """)
+        with sr.Microphone() as sourcce :
+            r = sr.Recognizer()
+            print("LISTENING... app name")
+            audio = r.listen(sourcce)
+            app_name = r.recognize_google(audio, language="en-IN")
+            print(f"User wants to open: {app_name}")
+            try :
+                open(app_name.lower())
+                speak(f"Opening {app_name}")
+            except Exception as e :
+                print(f"Error opening {app_name}: {e}")
+                speak(f"Sorry, I couldn't open {app_name}.")
+
+    elif "tell date and time" in c.lower() :
         now = dt.datetime.now()
         hour = now.strftime('%I')
         minute = now.strftime('%M')
@@ -34,13 +82,13 @@ def ProcessCommand(c) :
         time_str = f"It's {hour}:{minute} {ampm} on {date_str}."
         speak(f"Sir, the current time and date is {time_str}")
 
-    if "open mail" in c.lower() :
+    elif "open mail" in c.lower() :
         webbrowser.open("https://mail.google.com")
         
-    if "open github" in c.lower() :
+    elif "open github" in c.lower() :
         webbrowser.open("https://github.com")
 
-    if "open google" in c.lower() :
+    elif "open google" in c.lower() :
         speak("sir what do you want to search on google")
         with sr.Microphone() as source :
             r = sr.Recognizer()
@@ -50,10 +98,10 @@ def ProcessCommand(c) :
             print(f"User wants to search: {search_query}")
         webbrowser.open(f"https://www.google.com/search?q={search_query}")
 
-    if "open linkedin" in c.lower() :
+    elif "open linkedin" in c.lower() :
         webbrowser.open("https://linkedin.com")
 
-    if "open youtube" in c.lower() :
+    elif "open youtube" in c.lower() :
         speak("sir do you want me to search anything on youtube")
         with sr.Microphone() as source :
             r = sr.Recognizer()
@@ -74,7 +122,7 @@ def ProcessCommand(c) :
         else :
             pass
 
-    if "open instagram" in c.lower() :
+    elif "open instagram" in c.lower() :
         webbrowser.open("https://instagram.com")
     
     if "change brightness" in c.lower().strip() :
@@ -93,7 +141,7 @@ def ProcessCommand(c) :
             print(f"Error changing brightness: {e}")
             speak("Sorry, I couldn't change the brightness.")
         
-    if "change volume" in c.lower().strip() :
+    elif "change volume" in c.lower().strip() :
         devices = AudioUtilities.GetSpeakers()
         interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
         volume = interface.QueryInterface(IAudioEndpointVolume)
@@ -123,7 +171,7 @@ def ProcessCommand(c) :
                 print(f"Error changing volume: {e}")
                 speak("Sorry, I couldn't change the volume.")
 
-    if "open spotify" in c.lower() :
+    elif "open spotify" in c.lower() :
         speak("Spotify opened sir tell the name of the song you want to play")
         with sr.Microphone() as source:
             r = sr.Recognizer()
@@ -141,7 +189,7 @@ def ProcessCommand(c) :
             speak ("please tell the position of the song when the search results are shown")
             play(song)
             speak(f"playing {song}")
-    if "open whatsapp" in c.lower() :
+    elif "open whatsapp" in c.lower() :
         speak("sir do you want to write msg or call")
         print("please say write msg or call")
         with sr.Microphone() as source :
@@ -193,7 +241,7 @@ def ProcessCommand(c) :
             else :
                 speak("type did not mentioned clearly function terminated")
     
-    if " tell news" in c.lower() :
+    elif " tell news" in c.lower() :
         speak("Which topic do you want news about? Please keep it short.")
         with sr.Microphone() as source:
             r = sr.Recognizer()
@@ -201,7 +249,7 @@ def ProcessCommand(c) :
             audio = r.listen(source)
             topic = r.recognize_google(audio, language="en-IN")
             print(f"User asked for news on: {topic}")
-        api_key = ""  # Replace with your NewsAPI key
+        api_key = newsapi
         url = f"https://newsapi.org/v2/everything?q={topic}&apiKey={api_key}&pageSize=1"
         try:
             response = requests.get(url)
@@ -217,7 +265,7 @@ def ProcessCommand(c) :
             print(f"Error fetching news: {e}")
             speak("Sorry, there was an error fetching the news.")
 
-    if "take note" in c.lower():
+    elif "take note" in c.lower():
         speak("What would you like me to note down?")
         with sr.Microphone() as source:
             r = sr.Recognizer()
@@ -229,7 +277,7 @@ def ProcessCommand(c) :
             f.write(note + "\n")
         speak("Your note has been saved.")
 
-    if "clear notes" in c.lower():
+    elif "clear notes" in c.lower():
         try:
             open("notes.txt", "w").close() 
             speak("All notes have been cleared.")
@@ -237,7 +285,7 @@ def ProcessCommand(c) :
             print(f"Error clearing notes: {e}")
             speak("Sorry, there was an error clearing the notes.")
             
-    if "read notes" in c.lower():
+    elif "read notes" in c.lower():
         try:
             with open("notes.txt", "r") as f:
                 notes = f.readlines()
@@ -269,7 +317,7 @@ def ProcessCommand(c) :
 
 def ai_process(c) :
     client = OpenAI(
-        api_key="",# enter your openai api key here
+        api_key= openai,
     )
     completion = client.chat.completions.create(
         model="gpt-4.1",
@@ -293,7 +341,21 @@ def speak(text) :
     engine.runAndWait()
 
 def open(app) :
-    os.system(f"start {app}:")  # only for standard apps
+    app = app.lower().strip()
+    if app in ["notepad"]:
+        os.system("start notepad")
+    elif app in ["calculator", "calc"]:
+        os.system("start calc")
+    elif app in ["camera"]:
+        os.system("start microsoft.windows.camera:")
+    elif app in ["powershell"]:
+        os.system("start powershell")
+    elif app in ["calendar"]:
+        os.system("start outlookcal:")
+    elif app in ["settings"]:
+        os.system("start ms-settings:")
+    else:
+        os.system(f"start {app}:")  # only for standard apps
 
 def final(stop_event=None):
     while not stop_event.is_set():
