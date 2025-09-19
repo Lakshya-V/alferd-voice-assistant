@@ -1,0 +1,12 @@
+customtkinter
+comtypes
+pyttsx3
+SpeechRecognition
+psutil
+screen_brightness_control
+pycaw
+openai
+requests
+word2number
+pillow
+pyautogui
