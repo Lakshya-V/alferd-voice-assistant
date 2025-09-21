@@ -3,9 +3,6 @@ import time as t
 import speech_recognition as sr
 from word2number import w2n
 
-#Please do not touch any input device while code is running
-#if you want to stop the code please move your mouse to top left corner of screen
-
 def play_pause() :
     p.press('win')
     t.sleep(1)
@@ -24,7 +21,9 @@ def play(nm) :
     t.sleep(6)
     p.moveTo(969,39,duration=0.75)
     p.click()
+    p.click()
     p.hotkey('ctrl', 'a')
+    t.sleep(0.5)
     p.press('backspace')
     t.sleep(1)
     p.write(nm)
@@ -40,7 +39,7 @@ def play(nm) :
     p.press('tab')
     p.press('tab')
     p.press('tab')
-    p.press('tab')
+    p.press("tab")
     for i in range(w2n.word_to_num(pos)) :
         p.press('down')
     p.press('enter')
