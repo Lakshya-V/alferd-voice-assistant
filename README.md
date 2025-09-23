@@ -43,6 +43,18 @@ Alferd is a modular, voice-controlled desktop assistant for Windows. It can auto
 - More system controls (e.g., Bluetooth, airplane mode)
 - More automation features
 
+
+## Future Improvements
+
+- Advanced Voice Recognition: Migrate the voice recognition engine to a more accurate, state-of-the-art solution like Vosk or a cloud-based API to improve command accuracy.
+
+- Expanded Functionality: Add support for more applications, implement a to-do list, or enable calendar management.
+
+- Standalone Application: Package the project into a standalone executable file so that users can run it without needing to install Python or other dependencies.
+
+- Enhanced UI/UX: Introduce a more minimalistic, floating widget UI and add visual feedback to show when the assistant is actively listening.
+
+
 ---
 
 ## Acknowledgements
