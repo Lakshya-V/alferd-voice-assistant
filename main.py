@@ -60,7 +60,6 @@ def ProcessCommand(c) :
               3 powershell
               4 calender
               5 settings
-              6 camera
               """)
         with sr.Microphone() as sourcce :
             r = sr.Recognizer()
