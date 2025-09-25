@@ -18,22 +18,23 @@ class TextboxRedirector:
 class VoiceAssistantApp(ctk.CTk):
     def __init__(self):
         super().__init__()
+        ctk.set_appearance_mode("dark")
         self.title("ALFERD")
-        self.geometry("600x400") 
-        bg_image = Image.open("assets/bg.png")  
+        self.geometry("1220x600") 
+        bg_image = Image.open("assets/bgia.png")  
         bg_photo = ImageTk.PhotoImage(bg_image)
         self.bg_label = ctk.CTkLabel(self, image=bg_photo, text="")
         self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
         self.bg_label.image = bg_photo  
+        
+        self.start_button = ctk.CTkButton(self, height=35,width=100,  bg_color="transparent",fg_color="darkgreen",hover_color="black", text="WAKE", corner_radius=2, command=self.start_assistant_thread)
+        self.start_button.pack(pady=80)
 
-        self.start_button = ctk.CTkButton(self,bg_color="transparent",fg_color="green",hover_color="black", text="START ASSISTANT", command=self.start_assistant_thread)
-        self.start_button.pack(pady=30)
+        self.output_textbox = ctk.CTkTextbox(self, width=900, height=200, corner_radius=2, fg_color="white",text_color="black",border_spacing=10)
+        self.output_textbox.pack(pady=40)
 
-        self.stop_button = ctk.CTkButton(self,bg_color="transparent",fg_color="blue",hover_color="black", text="STOP ASSISTANT", command=self.stop_assistant_thread, state="disabled")
-        self.stop_button.pack(pady=20)
-
-        self.output_textbox = ctk.CTkTextbox(self, width=450, height=200, corner_radius=10, fg_color="white",text_color="black")
-        self.output_textbox.pack(pady=30)
+        self.stop_button = ctk.CTkButton(self, height=35,width=100, bg_color="transparent",fg_color="navyblue",hover_color="black", text="SLEEP", corner_radius=2, command=self.stop_assistant_thread, state="disabled")
+        self.stop_button.pack(pady=45)
 
         self.stop_event = threading.Event()
 
